@@ -4,7 +4,8 @@
 	"description": "MCP server for CV chat and email notifications",
 	"main": "src/index.js",
 	"scripts": {
-		"start": "node src/index.js",
+		"start": "NODE_ENV=production node src/production-server.js",
+		"start:mcp": "node src/index.js",
 		"dev": "node --watch src/index.js",
 		"test": "jest",
 		"test:watch": "jest --watch"
