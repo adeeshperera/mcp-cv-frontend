@@ -68,11 +68,25 @@ export function ChatInterface() {
 
 	const callMCPTool = async (tool: string, args?: Record<string, unknown>) => {
 		try {
-			const response = await fetch("/api/mcp", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ tool, arguments: args }),
-			});
+			// You can use either the frontend API route that proxies to the backend
+			// or call the backend API directly
+			const useProxyEndpoint = true;
+
+			let response;
+			if (useProxyEndpoint) {
+				// Call through frontend API proxy
+				response = await fetch("/api/mcp", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ tool, arguments: args }),
+				});
+			} else {
+				// Import and use the direct API client
+				const { callMCPTool: directCallMCPTool } = await import(
+					"@/lib/api-client"
+				);
+				return await directCallMCPTool(tool, args);
+			}
 
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
