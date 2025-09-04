@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Call the deployed backend instead of local MCP server
-		const backendUrl = process.env.BACKEND_URL || "https://mcp-cv-backend-production.up.railway.app";
+		const backendUrl =
+			process.env.BACKEND_URL ||
+			"https://mcp-cv-backend-production.up.railway.app";
 		const result = await callBackendAPI(backendUrl, tool, args || {});
 
 		return NextResponse.json(result);
@@ -48,25 +50,31 @@ async function callBackendAPI(
 ): Promise<MCPResponse> {
 	try {
 		const response = await fetch(`${backendUrl}/api/mcp`, {
-			method: 'POST',
+			method: "POST",
 			headers: {
-				'Content-Type': 'application/json',
+				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
 				tool: toolName,
-				arguments: args
-			})
+				arguments: args,
+			}),
 		});
 
 		if (!response.ok) {
-			throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+			throw new Error(
+				`Backend API error: ${response.status} ${response.statusText}`
+			);
 		}
 
 		const result = await response.json();
 		return result;
 	} catch (error) {
-		console.error('Error calling backend API:', error);
-		throw new Error(`Failed to call backend: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		console.error("Error calling backend API:", error);
+		throw new Error(
+			`Failed to call backend: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`
+		);
 	}
 }
 
