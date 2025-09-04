@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
 		// Call the deployed backend instead of local MCP server
 		const backendUrl =
 			process.env.BACKEND_URL ||
+			process.env.NEXT_PUBLIC_BACKEND_URL ||
 			"https://mcp-cv-backend-production.up.railway.app";
+
+		console.log("Using backend URL:", backendUrl);
 		const result = await callBackendAPI(backendUrl, tool, args || {});
 
 		return NextResponse.json(result);
