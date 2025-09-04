@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callMCPTool as callExternalMCPTool } from "@/lib/api-client";
 
 interface MCPToolCall {
 	tool: string;
 	arguments?: Record<string, unknown>;
+}
+
+interface MCPResponse {
+	success: boolean;
+	data?: unknown;
+	summary?: string;
+	error?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -17,8 +23,10 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Call the external MCP API
-		const result = await callExternalMCPTool(tool, args || {});
+		// Call the deployed backend instead of local MCP server
+		const backendUrl = process.env.BACKEND_URL || "https://mcp-cv-backend-production.up.railway.app";
+		const result = await callBackendAPI(backendUrl, tool, args || {});
+
 		return NextResponse.json(result);
 	} catch (error) {
 		console.error("API: Error calling MCP tool:", error);
@@ -33,11 +41,39 @@ export async function POST(request: NextRequest) {
 	}
 }
 
+async function callBackendAPI(
+	backendUrl: string,
+	toolName: string,
+	args: Record<string, unknown>
+): Promise<MCPResponse> {
+	try {
+		const response = await fetch(`${backendUrl}/api/mcp`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				tool: toolName,
+				arguments: args
+			})
+		});
+
+		if (!response.ok) {
+			throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+		}
+
+		const result = await response.json();
+		return result;
+	} catch (error) {
+		console.error('Error calling backend API:', error);
+		throw new Error(`Failed to call backend: ${error instanceof Error ? error.message : 'Unknown error'}`);
+	}
+}
+
 // Also handle GET for testing
 export async function GET() {
 	return NextResponse.json({
 		message: "MCP API endpoint is running",
-		note: "This endpoint now forwards requests to the dedicated backend API",
 		availableTools: [
 			"get_personal_info",
 			"get_work_experience",
